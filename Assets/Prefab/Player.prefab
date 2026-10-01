@@ -160,6 +160,7 @@ MonoBehaviour:
   respawnDelay: 3
   attackKey: 32
   attackWithLeftMouseButton: 1
+  impactSound: {fileID: 8300000, guid: ba03ed87e77b81c488a090c34a517104, type: 3}
   health:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0

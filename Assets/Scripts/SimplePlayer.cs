@@ -6,6 +6,30 @@ using UnityEngine;
 public class SimplePlayer : NetworkBehaviour
 {
     // =========================================================
+    // MATRIZ DE AUTORIDAD DEL COMBATE
+    //
+    // ESTADO   -> lo replica el servidor (NetworkVariable).
+    // EVENTO   -> lo pide el cliente, lo decide el servidor (RPC).
+    // FEEDBACK -> lo avisa el servidor a los clientes (RPC no fiable)
+    //             y NUNCA toca el estado.
+    //
+    // Elemento   | Tipo                | Escribe       | Lee         | Viaja por red
+    // -----------+---------------------+---------------+-------------+---------------------------
+    // health     | NetworkVariable<int>| SERVIDOR      | todos       | replicado, fiable
+    // Golpe      | RPC petición        | cliente (dueño)| SERVIDOR    | SendTo.Server, fiable
+    // Daño       | decisión server-side| SERVIDOR      | SERVIDOR    | no viaja, lo calcula
+    // IsDead     | ESTADO DERIVADO     | nadie         | todos       | no se replica
+    // Feedback   | RPC no fiable       | SERVIDOR      | clientes    | Unreliable
+    // Movimiento | RPC petición        | cliente (dueño)| SERVIDOR    | SendTo.Server, fiable
+    // Reaparición| health = maxHealth  | SERVIDOR      | todos       | replicado, fiable
+    // =========================================================
+    //
+    // Regla de oro: la vida SOLO se escribe en ApplyDamage() y en
+    // el servidor. Ningún cliente modifica la vida ni el daño.
+    // =========================================================
+
+
+    // =========================================================
     // MOVIMIENTO (esto ya funcionaba, se conserva tal cual)
     // =========================================================
 
@@ -24,6 +48,10 @@ public class SimplePlayer : NetworkBehaviour
     public float respawnDelay = 3f;
     public KeyCode attackKey = KeyCode.Space;
     public bool attackWithLeftMouseButton = true;
+
+    // Sonido del impacto. Solo se usa como feedback: cada cliente lo
+    // reproduce cuando el servidor confirma que el golpe fue válido.
+    public AudioClip impactSound;
 
     // Identificador reservado para "no hay objetivo".
     // Netcode no usa el 0 como NetworkObjectId.
@@ -426,7 +454,7 @@ public class SimplePlayer : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost, Delivery = RpcDelivery.Unreliable)]
     private void PlayHitEffectRpc(Vector3 hitPoint, int damageAmount)
     {
-        CombatVfx.PlayImpact(hitPoint);
+        CombatVfx.PlayImpact(hitPoint, impactSound);
 
         FloatingDamageText.Spawn(
             hitPoint + Vector3.up * 0.4f,

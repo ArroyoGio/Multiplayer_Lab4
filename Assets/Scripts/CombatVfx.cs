@@ -25,11 +25,14 @@ public static class CombatVfx
 
     // =========================================================
     // GOLPE QUE SÍ IMPACTA
+    //
+    // El clip llega desde el jugador (serializado en el prefab).
+    // Si no hay ninguno asignado, se usa el generado por código.
     // =========================================================
 
-    public static void PlayImpact(Vector3 position)
+    public static void PlayImpact(Vector3 position, AudioClip clip)
     {
-        PlaySound(impactClip, position, 0.9f);
+        PlaySound(clip != null ? clip : impactClip, position, 0.9f);
         CreateParticles(position, new Color(1f, 0.75f, 0.25f), 18, 3.5f, 0.18f, 0.45f);
     }
 
