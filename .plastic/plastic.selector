@@ -1,0 +1,4 @@
+repository "Multiplayer_lab2/Multiplayer_lab2@4674245808848@cloud"
+  path "/"
+    br "/main"
+    co "/main"
